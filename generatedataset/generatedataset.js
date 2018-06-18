@@ -14,8 +14,13 @@ const racetypes = nconf.get('racetypes')
 const surfaces = nconf.get('surfaces')
 const goings = nconf.get('goings')
 const goingMappings = nconf.get('goingmappings')
+const generateset = nconf.get('generateset')
+const datelimit = nconf.get('datelimit')
+const output = nconf.get('output')
 
 const MongoClient=require('mongodb').MongoClient;
+
+let nRecords = 0
 
 MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
  //logger.info("connected");
@@ -34,13 +39,22 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
               let performance = performances[key]
              // logger.info(JSON.stringify(performance))
               performance.raceid = key
+
+
               if(racetypes.find((str) => str === performance.racetype) && surfaces.find((str) => str === performance.surface)) {
                 if((performance.speed >= absoluteMinimumSpeed)&&(performance.speed <= absoluteMaximumSpeed)){
                   if(goings.find((str) => str === performance.going)){
                     if(performance.percentofwinningtime >= minPercentOfWinningTime){
                       //logger.info("GOOD")
-                      if(performance.distance >= minDistance && performance.distance < maxDistance)
+                      if(performance.distance >= minDistance && performance.distance < maxDistance){
+                        if((generateset == 'generate') && moment(performance.date).isBefore(datelimit)){
                           performanceArray.push(performance)
+                        }
+                        else if((generateset =='test') && moment(performance.date).isSameOrAfter(datelimit)) {
+                          performanceArray.push(performance)
+                        }
+                      }
+                        
                     }
                     else{
                      // logger.info("Wrong percent: " + performance.percentofwinningtime)
@@ -80,6 +94,8 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
 
     },
     error => {
+      
+      if(!output)console.log(nRecords)
       process.exit()
     })
     
@@ -119,7 +135,8 @@ const generatePerformances = (parray) => {
         }
 
              
-        console.log(JSON.stringify(performanceRecord) + ",")
+        if(output)console.log(JSON.stringify(performanceRecord) + ",")
+        nRecords++
 
 
 
