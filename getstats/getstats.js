@@ -1,4 +1,21 @@
 
+/* Output Statistics for a dataset
+returns a JSON structure:
+[
+  "<attribute":{
+      "min": ,
+      "max": ,
+      "mean": ,
+      "stdev"
+  
+  },
+  . . . 
+]
+
+where attributes are:
+speed1, speed2, datediff, going1, going2, goingdiff, distance1, distance2, distancediff, weight1, weight2, weightdiff
+
+*/
 'use strict'
 
 const nconf = require('../config/conf.js').nconf
@@ -16,14 +33,27 @@ const goings = nconf.get('goings')
 const goingMappings = nconf.get('goingmappings')
 const generateset = nconf.get('generateset')
 const datelimit = nconf.get('datelimit')
-const output = nconf.get('output')
 
-const preprocesstype = nconf.get('preprocesstype') //will be null, 'standardise' or 'normalise'
-const stats = nconf.get('stats')
 
 const MongoClient=require('mongodb').MongoClient;
 
 let nRecords = 0
+
+let dataArrays ={
+  "speed1":[],
+  "speed2":[],
+  "datediff":[],
+  "going1":[],
+  "going2":[],
+  "goingdiff":[],
+  "distance1":[],
+  "distance2":[],
+  "distancediff":[],
+  "weight1":[],
+  "weight2":[],
+  "weightdiff":[]
+
+}
 
 MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
  //logger.info("connected");
@@ -79,18 +109,7 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
 
             }
 
-            //now generate the performance records
-
-            //sort by date
-            performanceArray.sort(function(a,b){
-
-              if(a.date < b.date)return(-1)
-              else if(a.date > b.date)return(1)
-              return(0)
-
-            })
-
-
+           
             generatePerformances(performanceArray)
 
         }
@@ -98,7 +117,7 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
     },
     error => {
       
-      if(!output)console.log(nRecords)
+      console.log(JSON.stringify(generateStats()))
       process.exit()
     })
     
@@ -120,25 +139,36 @@ const generatePerformances = (parray) => {
           racedate1: perf1.date,
           racedate2: perf2.date,
           raceid2: perf2.raceid,
-          speed1:preprocess(preprocesstype,stats,'speed1',perf1.speed),
-          speed2:preprocess(preprocesstype,stats,'speed2',perf2.speed),
-          datediff:preprocess(preprocesstype,stats,'datediff',diffDays),
-          going1:preprocess(preprocesstype,stats,'going1',goingMappings[perf1.going]),
-          going2:preprocess(preprocesstype,stats,'going2',goingMappings[perf2.going]),
-          goingdiff:preprocess(preprocesstype,stats,'goingdiff',goingMappings[perf2.going] - goingMappings[perf1.going]),
-          distance1:preprocess(preprocesstype,stats,'distance1',perf1.distance),
-          distance2:preprocess(preprocesstype,stats,'distance2',perf2.distance),
-          distancediff:preprocess(preprocesstype,stats,'distancediff',perf2.distance-perf1.distance),
-          weight1:preprocess(preprocesstype,stats,'weight1',perf1.weight),
-          weight2:preprocess(preprocesstype,stats,'weight2',perf2.weight),
-          weightdiff:preprocess(preprocesstype,stats,'weightdiff',perf2.weight-perf1.weight),
+          speed1:perf1.speed,
+          speed2:perf2.speed,
+          datediff:diffDays,
+          going1:goingMappings[perf1.going],
+          going2:goingMappings[perf2.going],
+          goingdiff:goingMappings[perf2.going] - goingMappings[perf1.going],
+          distance1:perf1.distance,
+          distance2:perf2.distance,
+          distancediff:perf2.distance-perf1.distance,
+          weight1:perf1.weight,
+          weight2:perf2.weight,
+          weightdiff:perf2.weight-perf1.weight,
           type1:perf1RaceType,
           type2:perf2RaceType,
           typediff:perf2RaceType-perf1RaceType
         }
 
              
-        if(output)console.log(JSON.stringify(performanceRecord) + ",")
+        dataArrays.speed1.push(performanceRecord.speed1)
+        dataArrays.speed2.push(performanceRecord.speed2)
+        dataArrays.datediff.push(performanceRecord.datediff)
+        dataArrays.going1.push(performanceRecord.going1)
+        dataArrays.going2.push(performanceRecord.going2)
+        dataArrays.goingdiff.push(performanceRecord.goingdiff)
+        dataArrays.distance1.push(performanceRecord.distance1)
+        dataArrays.distance2.push(performanceRecord.distance2)
+        dataArrays.distancediff.push(performanceRecord.distancediff)
+        dataArrays.weight1.push(performanceRecord.weight1)
+        dataArrays.weight2.push(performanceRecord.weight2)
+        dataArrays.weightdiff.push(performanceRecord.weightdiff)
         nRecords++
 
 
@@ -162,24 +192,66 @@ const mapRaceType = (racetype) => {
           
 }
 
+const generateStats = () => {
+  let rval ={}
+  rval["speed1"] = generateStatsForAttribute("speed1")
+  rval["speed2"] = generateStatsForAttribute("speed2")
+  rval["datediff"] = generateStatsForAttribute("datediff")
+  rval["going1"] = generateStatsForAttribute("going1")
+  rval["going2"] = generateStatsForAttribute("going2")
+  rval["goingdiff"] = generateStatsForAttribute("goingdiff")
+  rval["distance1"] = generateStatsForAttribute("distance1")
+  rval["distance2"] = generateStatsForAttribute("distance2")
+  rval["distancediff"] = generateStatsForAttribute("distancediff")
+  rval["weight1"] = generateStatsForAttribute("weight1")
+  rval["weight2"] = generateStatsForAttribute("weight2")
+  rval["weightdiff"] = generateStatsForAttribute("weightdiff")
 
-//type will be 'standardise', 'normalise' or null
-const preprocess = (type,stats,attribute, value) => {
 
-  if(type == null) return(value)
+  return(rval)
+}
 
-  if(type == 'standardise'){
-    let mu = stats[attribute].mean
-    let sd = stats[attribute].stdev
-    return((value - mu)/sd)
+
+const generateStatsForAttribute = (attribute) => {
+
+  let rval = {
+    "min": null,
+    "max": null,
+    "mean": null,
+    "stdev": null
   }
 
-  if(type == 'normalise'){
-    let min = stats[attribute].min
-    let max = stats[attribute].max
-    return((value - min)/(max - min))
+  let total = 0
+  let n = dataArrays[attribute].length
+  for(let i = 0; i < n; i++){
+    let val = dataArrays[attribute][i]
+    if(rval.min == null){
+      rval.min = val
+    }
+    if(rval.max == null){
+      rval.max = val
+    }
+    if(val > rval.max)rval.max = val
+    if(val < rval.min)rval.min = val
+
+    total += val
   }
 
+  rval.mean = total / n
+
+  let diffMeanSquaredTotal = 0
+
+  for(let i = 0; i < n ; i++){
+    let val = dataArrays[attribute][i]
+    diffMeanSquaredTotal += Math.pow(val - rval.mean,2)
+
+  }
+
+  let avgDiffMean = diffMeanSquaredTotal / n
+
+  rval.stdev = Math.sqrt(avgDiffMean)
+
+  return(rval)
 }
 
 
