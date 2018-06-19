@@ -1,0 +1,37 @@
+{
+  "functionSet":{
+    "+":{
+      "arity":2
+    },
+    "-":{
+      "arity":2
+    },
+    "*":{
+      "arity":2
+    },
+    "/":{
+      "arity":2
+    },
+    "^":{
+      "arity":2
+    },
+    "if<=":{
+      "arity":4
+    },
+    "cos":{
+      "arity":1
+    },
+    "sin":{
+      "arity":1
+    },
+    "log":{
+      "arity":1
+    },
+    "exp":{
+      "arity":1
+    },
+    "sqrt":{
+      "arity":1
+    }
+  }
+}

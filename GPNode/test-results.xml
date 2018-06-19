@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.008" tests="1" failures="0">
+  <testsuite name="Root Suite" timestamp="2018-06-19T12:18:05" tests="0" failures="0" time="0">
+  </testsuite>
+  <testsuite name="GPnode" timestamp="2018-06-19T12:18:05" tests="1" file="/home/adrian/Development/GPRacing/GPNode/GPnode.spec.js" failures="0" time="0.008">
+    <testcase name="GPnode returns a new node" time="0.008" classname="returns a new node">
+    </testcase>
+  </testsuite>
+</testsuites>
