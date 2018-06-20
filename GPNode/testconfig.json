@@ -33,5 +33,6 @@
     "sqrt":{
       "arity":1
     }
-  }
+  },
+  "variables":["x","y","z"]
 }
