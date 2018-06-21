@@ -293,4 +293,84 @@ describe('GPnode', () => {
     done()
 
   })
+
+  
+})
+
+describe('GPnode.parseNode', () => {
+  it('throws an error when trying to parse a non-array argument', (done) =>{
+     assert.throws(() => GPnode.parseNode(2.175),Error, "argument to parseNode should be an array")
+     done()
+
+  })
+
+  it('throws an error when trying to parse an invalid token', (done) =>{
+     assert.throws(() => GPnode.parseNode(["testtoken"]),Error, "invalid token: 'testtoken'")
+     done()
+
+  })
+
+  it('parses a constant', (done) => {
+    let node = GPnode.parseNode([2.175])
+    node.type.should.eql('constant')
+    node.value.should.eql(2.175)
+    done()
+  })
+
+  it('parses a variable', (done) => {
+    let node = GPnode.parseNode(["x"])
+    node.type.should.eql('variable')
+    node.variablename.should.eql("x")
+    done()
+  })
+
+  it('parses a function of arity 1', (done) => {
+    let node = GPnode.parseNode(["cos", 2.1])
+    node.type.should.eql('function')
+    node.functionname.should.eql('cos')
+    node.arguments.length.should.eql(1)
+    done()
+  })
+
+   it('parses a function of arity 2', (done) => {
+    let node = GPnode.parseNode(["+", 2.1, 3.5])
+    node.type.should.eql('function')
+    node.functionname.should.eql('+')
+    node.arguments.length.should.eql(2)
+    done()
+  })
+
+  it('parses a function of arity 4', (done) => {
+    let node = GPnode.parseNode(["if<=", 2.1, 3.5, 10.0, "x"])
+    node.type.should.eql('function')
+    node.functionname.should.eql('if<=')
+    node.arguments.length.should.eql(4)
+    done()
+  })
+
+  it('parses a valid complex expression', (done) => {
+    let node = GPnode.parseNode(["if<=", "cos", 3.5, 10.0, "x", "+", 10, "*", 100, "cos",3.1])
+    node.type.should.eql('function')
+    node.functionname.should.eql('if<=')
+    node.arguments.length.should.eql(4)
+    node.arguments[3].type.should.eql('function')
+    node.arguments[3].functionname.should.eql('+')
+    node.arguments[3].arguments.length.should.eql(2)
+    done()
+  })
+
+  describe('GPnode print', () => {
+    it('prints an array for a node', (done) => {
+      let node = GPnode.parseNode(["if<=", "cos", 3.5, 10.0, "x", "+", 10, "*", 100, "cos",3.1])
+      let strArr = node.toStrArr()
+      //console.log(node.printStr(10, true))
+      strArr.should.eql("\"if<=\",\"cos\",3.5,10,\"x\",\"+\",10,\"*\",100,\"cos\",3.1,")
+      done()
+    })
+  })
+
+
+
+
+
 })

@@ -7,7 +7,10 @@ const logger = require('../logger/log.js').logger
 
 let _GPnode_nodeid=0
 
+
+
 const functionSet = nconf.get('functionSet')
+const variableSet = nconf.get('variables')
 
 
 
@@ -29,7 +32,7 @@ class GPnode {
     }
     //it must be a defined variable
 
-    if((type === 'variable')&&!this.inArray(variablename,nconf.get('variables'))){
+    if((type === 'variable')&&!GPnode.inArray(variablename,variableSet)){
       throw new Error("not a valid variable: '" + variablename + "'")
     }
    
@@ -225,7 +228,64 @@ class GPnode {
 
   }
 
-inArray(token,array){
+  toStrArr(){
+    let str=''
+    
+    if(this.type=='constant'){
+      str+=this.value 
+      str+=','
+
+    }
+    else if(this.type=='variable'){
+      str+='"' + this.variablename + '"'
+      str+=','
+    }
+    else if(this.type=='function'){
+      str+='"'+this.functionname + '",'
+      if(true){
+
+        for(var i=0;i<this.arity;i++){
+          var arg=this.arguments[i]
+          str+=arg.toStrArr();
+
+        }
+      }
+
+    }
+    return(str);
+  }
+
+  printStr(depth,full){
+    let str='' + this.id + " "
+    for(let i=0;i<depth;i++){
+      str+=' '
+
+    }
+    if(this.type=='constant'){
+      str+=this.value
+      str+='\n'
+
+    }
+    else if(this.type=='variable'){
+      str+=this.variablename
+      str+='\n'
+    }
+    else if(this.type=='function'){
+      str+=this.functionname + '\n'
+      if(full){
+
+        for(var i=0;i<this.arity;i++){
+          var arg=this.arguments[i]
+          str+=arg.printStr(depth + 1,true)
+
+        }
+      }
+
+    }
+    return(str)
+  }
+
+ static inArray(token,array){
 
   for(var i=0;i<array.length;i++){
     if(token == array[i])return(true)
@@ -234,11 +294,56 @@ inArray(token,array){
   return(false)
 }
 
-  
+//Parse a gp Node from an array of strings
+static parseNode(array){
+  if(!Array.isArray(array)){
+    throw new Error("argument to parseNode should be an array")
+  }
+  else{
+    GPnode._parsePos=0;
+    return(GPnode.parseNode2(array));
+  }
+}
 
+static parseNode2(array){
+  let newNode
+  let token=array[GPnode._parsePos]
+  if(typeof token !== 'undefined'){
+    GPnode._parsePos++
+
+    if(typeof token=='number'){
+      newNode=new GPnode({'type':'constant','value':token}) //constant
+    }
+    else if(GPnode.inArray(token,variableSet)){      //variable
+      newNode=new GPnode({'type':'variable','variablename':token})
+    }
+    else if(typeof functionSet[token] !== 'undefined') {
+
+      const arity = functionSet[token].arity
+
+     
+      newNode=new GPnode({'type':'function','functionname':token})
+
+      for(var i=0;i<arity;i++){
+        newNode.arguments[i]=GPnode.parseNode2(array)
+      }
+    
+
+
+    }
+    else throw new Error("invalid token: '" + token + "'")
+
+    return(newNode)
+  }
+
+}
+
+ 
 
 
 }
+
+GPnode._parsePos=0;
 
 
 module.exports = Object.assign({}, {GPnode})
