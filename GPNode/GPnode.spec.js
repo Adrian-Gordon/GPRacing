@@ -507,6 +507,57 @@ describe('GPnode.parseNode', () => {
 
     })
 
+    it("point mutates a function of arity 1", (done) => {
+      let node = new GPnode({'type': 'function', 'functionname': 'cos'})
+      node = GPnode.pointMutate(node)
+      node.functionname.should.not.eql('cos')
+      done()
+
+    })
+
+    it("point mutates a function of arity 2", (done) => {
+      let node = new GPnode({'type': 'function', 'functionname': '+'})
+      node = GPnode.pointMutate(node)
+      node.functionname.should.not.eql('+')
+      done()
+
+    })
+
+    it("point mutates a function of arity 4", (done) => {
+      let node = new GPnode({'type': 'function', 'functionname': 'if<='})
+      node = GPnode.pointMutate(node)
+      node.functionname.should.eql('if<=')
+      done()
+
+    })
+
+    it("point mutates a constant", (done) => {
+      let node = new GPnode({'type':'constant','value':0.00000001})
+      node = GPnode.pointMutate(node)
+      node.value.should.not.eql(0.00000001)
+      done()
+    })
+
+    it("point mutates a variable", (done) => {
+      let node = new GPnode({'type':'variable','variablename':'x'})
+      node = GPnode.pointMutate(node)
+      node.variablename.should.not.eql('x')
+      done()
+    })
+
+    it("performs a subtree mutate", (done) => {
+       let node = GPnode.parseNode(["+","-",10,"*","cos","x",5,"y"]) 
+       node = GPnode.subtreeMutate(node,2,3)
+
+      // console.log(node.printStr(10,true))
+       node.arguments[0].arguments[0].type.should.eql('function')
+
+       done()
+
+    })
+
+    
+
     
   })
 

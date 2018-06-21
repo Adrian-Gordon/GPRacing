@@ -354,9 +354,55 @@ class GPnode {
 
 }
 
+static pointMutate(node){
+
+  if(node.type == 'function'){
+    let functionSet=nconf.get('functionSet')
+    let functionname = node.functionname
+    let arity = node.arity
+    let keys = Object.keys(functionSet)
+    keys = keys.filter((key) =>{
+      if((key != node.functionname)&&(functionSet[key].arity == arity))return(true)
+      return(false)
+    })
+
+    if(keys.length > 0){
+      let index = Math.floor(Math.random() * keys.length)
+      node.functionname = keys[index]
+    }
+    
+     
+  }
+  else if(node.type == 'constant'){
+    
+      const cSet = nconf.get('constantsSet').filter((c) => {if(c != node.value)return(true);return(false)})
+      node.value = cSet[Math.floor(Math.random() * cSet.length)]
+      //console.log(node.value)
+     
+
+  }
+  else if(node.type == 'variable'){
+    let variables = nconf.get('variables').filter((v) => {if(v != node.variablename)return(true);return(false)})
+    node.variablename = variables[Math.floor(Math.random() * variables.length)]
+
+    //console.log(node.variablename)
+    
+  }
+
+ return(node)
+}
+
+static subtreeMutate(node1, index, depth){
+
+  const node2 = GPnode.generateNode(depth,'full')
+
+  return(GPnode.crossover(node1,node2,index,0))
+
+}
+
   /*Auxilliary Functions */
 
-  toArray(){
+toArray(){
 
     if(this.type=='function'){
       //var f=[this];
