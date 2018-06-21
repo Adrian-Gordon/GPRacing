@@ -7,6 +7,7 @@ const assert = chai.assert
 const expect = chai.expect
 
 const GPnode = require('./GPnode').GPnode
+const nconf = require('../config/conf.js').nconf
 
 describe('GPnode', () => {
 
@@ -359,6 +360,13 @@ describe('GPnode.parseNode', () => {
     done()
   })
 
+  it('fails to parse an invalid complex expression', (done) => {
+    //let node = GPnode.parseNode(["if<=", "x",10, "*", "+", 5.6, "sin", "y"])
+    //console.log(node.printStr(10, true))
+     assert.throws(() => GPnode.parseNode(["if<=", "x",10, "*", "+", 5.6, "sin", "y"]),Error, "failed to parse invalid array expression")
+    done()
+  })
+
   describe('GPnode print', () => {
     it('prints an array for a node', (done) => {
       let node = GPnode.parseNode(["if<=", "cos", 3.5, 10.0, "x", "+", 10, "*", 100, "cos",3.1])
@@ -369,7 +377,138 @@ describe('GPnode.parseNode', () => {
     })
   })
 
+  describe('GPnode Genetic Operators', () => {
 
+    before(() => {
+      let constants = new Array(nconf.get('constants').nconstants)
+      for (let i=0; i< constants.length; i++){
+        constants[i] = (Math.random()*(nconf.get('constants').max - nconf.get('constants').min) + nconf.get('constants').min).toFixed(4)
+      }
+      nconf.set('constantsSet',constants)
+    })
+
+    it('generates a terminal node when depth is 0', (done) => {
+      let node = GPnode.generateNode(0,)
+
+      node.type.should.be.equalOneOf(['constant','variable'])
+      done()
+    })
+
+    it('generates a function node of depth 1', (done) => {
+      let node = GPnode.generateFunctionNode(1)
+
+      node.type.should.eql('function')
+      node.arguments[0].type.should.be.equalOneOf(['constant','variable']) //first argument should be a terminal node
+
+      if(node.arity == 2) node.arguments[1].type.should.be.equalOneOf(['constant','variable']) //second argument should be a terminal node
+
+      if(node.arity == 4){
+        node.arguments[2].type.should.be.equalOneOf(['constant','variable']) //second argument should be a terminal node
+        node.arguments[3].type.should.be.equalOneOf(['constant','variable']) //second argument should be a terminal node
+
+
+      }
+      done()
+    })
+
+    it("generates a 'full' strategy node of depth 2", (done) => {
+
+      let node = GPnode.generateNode(2,'full')
+
+      node.type.should.eql('function')
+      node.arguments[0].type.should.eql('function') //first argument should be a function node
+      node.arguments[0].arguments[0].type.should.be.equalOneOf(['constant','variable']) //its child should be terminal
+
+      if(node.arity == 2) node.arguments[1].type.should.eql('function') //second argument should be a function node
+
+      if(node.arity == 4){
+        node.arguments[2].type.should.eql('function') //second argument should be a function node
+        node.arguments[3].type.should.eql('function') //second argument should be a function node
+
+
+      }
+
+      done()
+    })
+
+    it("generates a 'full' strategy node of depth 6", (done)=> {
+      let node = GPnode.generateNode(6, 'full')
+      node.type.should.eql('function')
+     // console.log(node.printStr(6,true))
+      done()
+
+    })
+
+    it("generates a 'grow' strategy node of depth 6", (done)=> {
+      let node = GPnode.generateNode(6, 'grow')
+      node.type.should.be.equalOneOf(['constant','variable','function'])
+     // console.log(node.printStr(6,true))
+      done()
+
+    })
+
+    it("does a crossoverReplace of one node for another - base case", (done)=> {
+      let node1 = new GPnode({'type':'function','functionname': '+'})
+      let node2 = new GPnode({'type':'constant', 'value': 10})
+      let node3 = new GPnode({'type':'constant', 'value': 20})
+      let node4 = new GPnode({'type':'constant', 'value': 40})
+
+      node1.arguments = [node2,node3]
+
+      GPnode.crossoverReplace(node1,node3,node4)
+
+      node1.arguments[1].id.should.eql(node4.id)
+
+      done()
+
+    })
+
+    it("does a crossoverReplace of one node for another - recursive case", (done)=> {
+
+      "+ 10 - 20 5, becomes + 10 - 20 40"
+      let node1 = new GPnode({'type':'function','functionname': '+'})
+      let node2 = new GPnode({'type':'constant', 'value': 10})
+      
+      let node3 = new GPnode({'type':'function','functionname': '-'})
+
+      let node4 = new GPnode({'type':'constant', 'value': 20})
+
+      let node5 = new GPnode({'type':'constant', 'value': 5})
+
+      
+
+      let node6 = new GPnode({'type':'constant', 'value': 40})
+
+      node1.arguments = [node2,node3]
+      node3.arguments = [node4, node5]
+
+      GPnode.crossoverReplace(node1,node5,node6)
+
+      node1.arguments[1].arguments[1].id.should.eql(node6.id)
+
+      done()
+
+    })
+
+    it("performs a crossover operation", (done) => {
+
+      let node1 = GPnode.parseNode(["+","-",10,"*","cos","x",5,"y"])
+      let node2 = GPnode.parseNode(["if<=","x",10,"+",5,6,"sin","y"])
+      //console.log(node1.printStr(6,true))
+     // console.log(node2.printStr(6,true))
+
+      let node = GPnode.crossover(node1,node2,2,3)
+      //console.log(node.printStr(6,true))
+
+      node.arguments[0].arguments[0].type.should.eql('function')
+      node.arguments[0].arguments[0].functionname.should.eql('+')
+
+      done()
+
+    })
+
+    
+  })
 
 
 

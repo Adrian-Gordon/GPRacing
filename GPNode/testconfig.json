@@ -34,5 +34,15 @@
       "arity":1
     }
   },
-  "variables":["x","y","z"]
+  "variables":["x","y","z"],
+  "proportions":{
+    "functions": 0.5,
+    "constants": 0.25,
+    "variables": 0.25
+  },
+  "constants": {
+    "nconstants" : 10,
+    "min": -10.0,
+    "max": 10.0
+  }
 }

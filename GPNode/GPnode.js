@@ -227,6 +227,154 @@ class GPnode {
     
 
   }
+  /*Genetic Operators*/
+
+  static generateNode(depth, strategy){
+    const f = nconf.get('proportions').functions
+
+    const c = nconf.get('proportions').constants
+
+    const v = nconf.get('proportions').variables
+
+    if(depth == 0){ //randomly generate a terminal
+      const r = Math.random()
+      if(r > (c /(c + v))){
+        //generate a constant
+
+        const cSet = nconf.get('constantsSet')
+        const rc=cSet[Math.floor(Math.random() * cSet.length)]
+
+        let newNode = new GPnode({'type':'constant','value': rc})
+        return(newNode)
+      }
+      else{
+        //generate a variable
+        var va = nconf.get('variables')
+        var rv = variableSet [Math.floor(Math.random() * va.length)]
+        var newNode = new GPnode({'type':'variable','variablename': rv})
+        return(newNode)
+      }
+
+
+    }
+    else if(strategy == "grow"){  //generate a terminal or function
+        let r = Math.random()
+
+        if(r>((c+f)/(c+f+v))){//generate a variable
+            let va = nconf.get('variables')
+            let rv = va[Math.floor(Math.random() * va.length)]
+            let newNode = new GPnode({'type':'variable','variablename': rv})
+            return(newNode)
+          }
+          else if(r>(c/(c+f+v))){//generate a constant
+            const cSet = nconf.get('constantsSet')
+            let rc = cSet[Math.floor(Math.random() * cSet.length)]
+
+            let newNode = new GPnode({'type':'constant','value': rc})
+            return(newNode)
+          }
+          else{       //generate a function
+            return(GPnode.generateFunctionNode(depth,strategy))
+
+          }
+    }
+    else if(strategy == "full"){
+      return GPnode.generateFunctionNode(depth, strategy)
+    }
+
+
+  }
+
+ static generateFunctionNode(depth, strategy){
+    let fa=nconf.get('functionSet');
+    let keys = Object.keys(fa)
+    let rf=keys[Math.floor(Math.random() * keys.length)]
+
+    let newNode=new GPnode({'type':'function','functionname':rf});
+
+    let arity=newNode.arity;
+
+    for(let i=0;i<arity;i++){
+      newNode.arguments[i]=GPnode.generateNode(depth -1,strategy);
+    }
+
+    return(newNode);
+
+
+  }
+
+
+  static  crossover(node1,node2,index1,index2){
+      //logger.info("parent1: \n" + node1.printStr(0,true));
+      //logger.info("parent2: \n" + node2.printStr(0,true));
+      //logger.info("index1: " + index1 + " index2: " + index2);
+
+      let node1Copy = node1.copy()
+      let node2Copy = node2.copy()
+
+      let node1Arr = node1Copy.toArray()
+      let node2Arr = node2Copy.toArray()
+
+      let toReplace=node1Arr[index1]
+      let replacement=node2Arr[index2]
+
+      //logger.info("toReplace: \n" + toReplace.printStr(0,true));
+      //logger.info("replacement: \n" + replacement.printStr(0,true));
+
+      GPnode.crossoverReplace(node1Copy,toReplace,replacement)
+
+   return(node1Copy)
+
+
+
+  }
+
+   static crossoverReplace(node,replace,replacement){
+  //logger.info("crossoveReplace: " + node.id);
+
+  if(node.type=='function'){
+    //logger.info(node.id + " arguments: " + node.arguments);
+
+    for(let i=0;i<node.arguments.length;i++){
+
+      let arg=node.arguments[i]
+      //logger.info("crossoveReplace,check : " + arg.id);
+      if(arg.id===replace.id){
+        node.arguments[i]=replacement
+        //logger.info("found it");
+        break;
+      }
+      else if(arg.type=='function'){
+        //logger.info("go call cr: " + arg.id);
+        GPnode.crossoverReplace(arg,replace,replacement)
+      }
+    }
+  }
+  return(node)
+
+}
+
+  /*Auxilliary Functions */
+
+  toArray(){
+
+    if(this.type=='function'){
+      //var f=[this];
+
+      let args=[this]
+
+      for(var i=0;i<this.arity;i++){
+        var arg=this.arguments[i]
+        args=args.concat(arg.toArray())
+      }
+      return(args)
+
+    }
+    else {
+      var list=[this]
+      return(list)
+    }
+  }
 
   toStrArr(){
     let str=''
@@ -308,6 +456,7 @@ static parseNode(array){
 static parseNode2(array){
   let newNode
   let token=array[GPnode._parsePos]
+  //console.log(token)
   if(typeof token !== 'undefined'){
     GPnode._parsePos++
 
@@ -334,6 +483,9 @@ static parseNode2(array){
     else throw new Error("invalid token: '" + token + "'")
 
     return(newNode)
+  }
+  else{
+    throw new Error("failed to parse invalid array expression")
   }
 
 }
