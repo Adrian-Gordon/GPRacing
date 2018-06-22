@@ -39,6 +39,13 @@ const MongoClient=require('mongodb').MongoClient;
 
 let nRecords = 0
 
+let maxIncrease = 0
+let maxIncreaseSpeed1
+let maxIncreaseSpeed2
+let maxDecrease = 0
+let maxDecreaseSpeed1
+let maxDecreaseSpeed2
+
 let dataArrays ={
   "speed1":[],
   "speed2":[],
@@ -118,6 +125,8 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
     error => {
       
       console.log(JSON.stringify(generateStats()))
+      console.log("#maxIncrease: " + maxIncrease + " " + maxIncreaseSpeed1 + " " + maxIncreaseSpeed2)
+      console.log("#maxDecrease: " + maxDecrease + " " + maxDecreaseSpeed1 + " " + maxDecreaseSpeed2)
       process.exit()
     })
     
@@ -154,6 +163,17 @@ const generatePerformances = (parray) => {
           type1:perf1RaceType,
           type2:perf2RaceType,
           typediff:perf2RaceType-perf1RaceType
+        }
+
+        if(((perf2.speed - perf1.speed)/perf1.speed)< maxDecrease) {
+            maxDecrease = (perf2.speed - perf1.speed)/perf1.speed
+            maxDecreaseSpeed1= perf1.speed
+            maxDecreaseSpeed2 = perf2.speed
+        }
+        if(((perf2.speed - perf1.speed)/perf1.speed)> maxIncrease){
+            maxIncrease = (perf2.speed - perf1.speed)/perf1.speed
+            maxIncreaseSpeed1= perf1.speed
+            maxIncreaseSpeed2 = perf2.speed
         }
 
              
