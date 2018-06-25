@@ -227,6 +227,26 @@ class GPnode {
     
 
   }
+
+/* predict */
+
+predict(variablebindings, minFx, maxFx, maxDecrease, maxIncrease){
+
+  const val = this.eval(variablebindings)
+
+  const proportion = (val - minFx) / (maxFx - minFx)
+
+  const prediction = maxDecrease + proportion *(maxIncrease - maxDecrease)
+
+  return(prediction)
+
+
+}
+
+static squaredError(predicted, observed){
+  return Math.pow(predicted - observed, 2)
+}
+
   /*Genetic Operators*/
 
   static generateNode(depth, strategy){
@@ -399,6 +419,10 @@ static subtreeMutate(node1, index, depth){
   return(GPnode.crossover(node1,node2,index,0))
 
 }
+
+
+
+
 
   /*Auxilliary Functions */
 

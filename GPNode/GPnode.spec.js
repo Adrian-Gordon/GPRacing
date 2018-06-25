@@ -388,7 +388,7 @@ describe('GPnode.parseNode', () => {
     })
 
     it('generates a terminal node when depth is 0', (done) => {
-      let node = GPnode.generateNode(0,)
+      let node = GPnode.generateNode(0)
 
       node.type.should.be.equalOneOf(['constant','variable'])
       done()
@@ -559,6 +559,32 @@ describe('GPnode.parseNode', () => {
     
 
     
+  })
+
+  describe("prediction",  () => {
+    it("makes a prediction", () => {
+      let node = GPnode.parseNode(["*","x",2.0])
+      let minFx = -4.0
+      let maxFx = 5.0
+      let maxDecrease = -0.1
+      let maxIncrease =  0.3
+
+      let variableBindings = {"x": 2.0}
+
+      let proportion = (4.0 - -4.0) / (maxFx - minFx)
+
+      let prediction = node.predict(variableBindings, minFx, maxFx, maxDecrease, maxIncrease)
+
+      prediction.should.eql( -0.1 + proportion * (maxIncrease - maxDecrease))
+
+    })
+
+    it("returns a squared error", () => {
+      let sqerr = GPnode.squaredError(0.0,2.0)
+
+      sqerr.should.eql(4.0)
+    })
+
   })
 
 

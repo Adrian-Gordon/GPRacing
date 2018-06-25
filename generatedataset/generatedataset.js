@@ -137,7 +137,7 @@ const generatePerformances = (parray) => {
           typediff:perf2RaceType-perf1RaceType
         }
 
-             
+        // console.log(JSON.stringify(perf1))    
         if(output)console.log(JSON.stringify(performanceRecord) + ",")
         nRecords++
 
