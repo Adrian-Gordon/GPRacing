@@ -2,10 +2,10 @@
 
 
 
- const nconf = require('../config/conf.js').nconf
+const nconf = require('../config/conf.js').nconf
 
 
-const logger = require('../logger/log.js').logger
+const logger = require('../logger/logger.js')(module)
 
 
 let _GPnode_nodeid=0
@@ -13,7 +13,6 @@ let _GPnode_nodeid=0
 
 
 const functionSet = nconf.get('functionSet')
-console.log("functionSet: " + functionSet)
 const variableSet = nconf.get('variables')
 
 

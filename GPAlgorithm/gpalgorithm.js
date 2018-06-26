@@ -1,10 +1,9 @@
 'use strict'
 
- var nconf = require('../config/conf.js').nconf
-//const logger = require('../logger/log.js').logger
 const logger = require('../logger/logger')(module)
 
-const GPnode = require('../GPNode/GPnode.js').GPnode
+const nconf = require('../config/conf.js').nconf
+
 
 
 nconf.defaults({
@@ -55,11 +54,25 @@ nconf.defaults({
     "nconstants" : 10,
     "min": -10.0,
     "max": 10.0
-  }
+  },
+  "constantsSet":[]
 
 })
 
+let constants = new Array(nconf.get('constants').nconstants)
+for (let i=0; i< constants.length; i++){
+    constants[i] = (Math.random()*(nconf.get('constants').max - nconf.get('constants').min) + nconf.get('constants').min).toFixed(4)
+}
+   
+nconf.set('constantsSet',constants)
+
+
+const GPnode = require('../GPNode/GPnode.js').GPnode
+
 let population
+
+
+
 
 //generate a poulation using ramped half-and-half
 
@@ -82,7 +95,7 @@ const generatePopulation = (populationSize) => {
       depth++
 
     }
-    logger.info(depth)
+
     let gpNode
 
     if(strategy == "grow"){
@@ -115,6 +128,8 @@ const generatePopulation = (populationSize) => {
 
 }
 
+
+
+
 generatePopulation(10)
 
-console.log(JSON.stringify(population))
