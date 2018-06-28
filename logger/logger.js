@@ -1,7 +1,9 @@
 'use strict'
 
-const {createLogger, format, transports} = require('winston')
-const {combine, timestamp, label, printf} = format
+//const {createLogger, format, transports} = require('winston')
+//const {combine, timestamp, label, printf} = format
+
+const winston = require('winston')
 
 const getLabel = (callingModule) =>{
   let parts = callingModule.filename.split('/')
@@ -25,20 +27,20 @@ function traceCaller (n) {
   return s
 }
 
-const myFormat = printf(info => {
+const myFormat = winston.format.printf(info => {
   return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`
 })
 
 module.exports = (callingModule) => {
-  let logger =  createLogger({
-    format: combine(
-      format.colorize(),
-      label({label: getLabel(callingModule)}),
-      timestamp(),
+  let logger =  winston.createLogger({
+      format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.label({label: getLabel(callingModule)}),
+      winston.format.timestamp(),
       myFormat
     ),
     transports: [
-      new transports.Console()
+      new winston.transports.Console()
     ]
   })
 

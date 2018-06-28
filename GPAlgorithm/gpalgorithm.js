@@ -69,7 +69,7 @@ nconf.set('constantsSet',constants)
 
 const GPnode = require('../GPNode/GPnode.js').GPnode
 
-let population
+
 
 
 
@@ -86,7 +86,7 @@ const generatePopulation = (populationSize) => {
   let depth = minDepth
   let strategy = "full"
 
-  population = new Array(populationSize)
+  const population = new Array(populationSize)
 
   for(let i=0;i < populationSize;i++){
     incrementCounter++
@@ -125,11 +125,92 @@ const generatePopulation = (populationSize) => {
 
   }
 
+  return(population)
 
+
+}
+
+const evaluatePopulationMember = (populationMember, observations) => {
+
+ let rule=populationMember.rule
+ 
+  //Once through, to get min and max values of the function
+  let min
+  let max
+  for(let i=0;i<observations.length;i++){
+    let obs=observations[i]
+    if(obs.speed1!== null && obs.speed2 !== null){
+  
+   
+     
+      obs.val=rule.eval(obs)
+
+      //logger.info(obs.val)
+
+      if(typeof min == 'undefined' && typeof max == 'undefined'){
+        min = max = obs.val
+      }
+      if(obs.val > max)max=obs.val
+      if(obs.val < min)min=obs.val
+    }
+
+  }
+//  logger.info('rule min: ' + min)
+ //logger.info('rule max: ' + max)
+
+  rule.minfofx=min
+  rule.maxfofx=max
+
+  let maxIncrease = nconf.get("maxSpeedIncrease")
+  let maxDecrease = nconf.get("maxSpeedDecrease")
+
+  //logger.info(maxIncrease + " " + maxDecrease)
+
+  for(let i=0;i<observations.length;i++){
+  //  for(var i=0;i<10;i++){
+    let obs=observations[i]
+    if(obs.speed1!== null && obs.speed2 !== null){
+     
+      
+      obs.predictedProportion=(obs.val - rule.minfofx)/(rule.maxfofx - rule.minfofx)
+      obs.predictedChange = maxDecrease + (obs.predictedProportion  *( maxIncrease - maxDecrease))
+      obs.actualChange=((obs.speed2 - obs.speed1)/obs.speed1)
+      obs.error = GPnode.squaredError(obs.predictedChange,obs.actualChange)
+
+      populationMember.stats.cumulativeError=populationMember.stats.cumulativeError + obs.error
+      populationMember.stats.nobservations=populationMember.stats.nobservations+1;
+
+
+      //logger.info(JSON.stringify(obs))
+     
+    }
+  }
+
+  populationMember.stats.fitness=Math.sqrt(populationMember.stats.cumulativeError / populationMember.stats.nobservations)
+  //logger.info("Fitness: " + pm.stats.fitness);
+  if(populationMember.stats.fitness==Infinity){
+    //logger.info("FITNESS INFINITY");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+  if(populationMember.stats.fitness==null){
+    //logger.info("FITNESS NULL");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+  if( isNaN(populationMember.stats.fitness)){
+    //logger.info("FITNESS NAN");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+
+  //logger.info(JSON.stringify(populationMember))
+
+
+  return populationMember
 }
 
 
 
 
-generatePopulation(10)
+//generatePopulation(10)
+
+module.exports = Object.assign({}, {evaluatePopulationMember, generatePopulation})
 

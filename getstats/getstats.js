@@ -19,7 +19,7 @@ speed1, speed2, datediff, going1, going2, goingdiff, distance1, distance2, dista
 'use strict'
 
 const nconf = require('../config/conf.js').nconf
-const logger = require('../logger/log.js').logger
+const logger = require('../logger/logger')(module)
 const moment = require('moment')
 
 const absoluteMinimumSpeed = nconf.get('absoluteMinimumSpeed')
