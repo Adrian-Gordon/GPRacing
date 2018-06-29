@@ -130,6 +130,21 @@ const generatePopulation = (populationSize) => {
 
 }
 
+const evaluatePopulation = (population, observations, all) => {
+  let start = 0
+  if(!all){
+    start = nconf.get("nelite")
+  }
+
+  for(let i=start; i< population.length; i++){
+    let populationMember = population[i]
+    evaluatePopulationMember(populationMember, observations)
+  }
+
+  //logger.info(JSON.stringify(population))
+  return population
+}
+
 const evaluatePopulationMember = (populationMember, observations) => {
 
  let rule=populationMember.rule
@@ -207,10 +222,18 @@ const evaluatePopulationMember = (populationMember, observations) => {
   return populationMember
 }
 
+const sortPopulation = (population) => {
+  return(population.sort((a,b) => {
+    if(a.stats.fitness < b.stats.fitness)return(-1)
+    else if(a.stats.fitness > b.stats.fitness)return(1)
+    else return(0)
+  }))
+}
+
 
 
 
 //generatePopulation(10)
 
-module.exports = Object.assign({}, {evaluatePopulationMember, generatePopulation})
+module.exports = Object.assign({}, {evaluatePopulation, evaluatePopulationMember, generatePopulation, sortPopulation})
 

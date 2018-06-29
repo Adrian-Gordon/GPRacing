@@ -34,7 +34,7 @@
       "arity":1
     }
   },
-  "variables":["x","y","z"],
+  "variables":["x","y","z","speed1"],
   "proportions":{
     "functions": 0.5,
     "constants": 0.25,
@@ -46,5 +46,6 @@
     "max": 10.0
   },
   "maxSpeedIncrease":0.4,
-  "maxSpeedDecrease":-0.3
+  "maxSpeedDecrease":-0.3,
+  "nelite": 2
 }
