@@ -114,6 +114,8 @@ describe('GPnode', () => {
 
   })
 
+
+
   it('evaluates a constant', (done) => {
     let node = new GPnode({'type':'constant','value': 4.27})
 
@@ -366,6 +368,7 @@ describe('GPnode.parseNode', () => {
      assert.throws(() => GPnode.parseNode(["if<=", "x",10, "*", "+", 5.6, "sin", "y"]),Error, "failed to parse invalid array expression")
     done()
   })
+})
 
   describe('GPnode print', () => {
     it('prints an array for a node', (done) => {
@@ -556,6 +559,47 @@ describe('GPnode.parseNode', () => {
 
     })
 
+    it("it returns an index into a node structure, where the node at that index is a function", (done) => {
+      let ar = ["+","-",10,"*","cos","x",5,"y"]
+      let node = GPnode.parseNode(ar) 
+
+      let index = node.selectIndex(true)
+
+       should.exist(nconf.get('functionSet')[ar[index]])
+
+
+      done()
+
+    })
+
+    it("it returns an index into a node structure, where the node at that index is a terminal", (done) => {
+      let ar = ["+","-",10,"*","cos","x",5,"y"]
+      let node = GPnode.parseNode(ar) 
+
+      let index = node.selectIndex(false)
+
+      should.not.exist(nconf.get('functionSet')[ar[index]])
+
+
+      done()
+
+    })
+
+    it("it returns an index into a node structure, where the node at that index is either a terminal or a function", (done) => {
+      let ar = ["+","-",10,"*","cos","x",5,"y"]
+      let node = GPnode.parseNode(ar) 
+
+      let index = node.selectIndex()
+
+      index.should.be.above(-1)
+
+
+      done()
+
+    })
+
+     
+
     
 
     
@@ -586,7 +630,3 @@ describe('GPnode.parseNode', () => {
     })
 
   })
-
-
-
-})

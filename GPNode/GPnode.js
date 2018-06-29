@@ -231,6 +231,38 @@ class GPnode {
 
   }
 
+  selectIndex(isFunction){
+    let ar = this.toArray()
+    let selected = false
+
+    let selectedIndex
+
+    while(!selected){
+      let i = Math.floor(Math.random() * ar.length)
+      let sn = ar[i]
+      if(typeof isFunction == 'undefined'){
+         selected = true
+        selectedIndex = i
+      }
+      else if(isFunction){
+        if(sn.type =="function"){
+          selected = true
+          selectedIndex = i
+        }
+      }
+      else if(!isFunction){
+        if(sn.type !="function"){
+          selected = true
+          selectedIndex = i
+        }
+      }
+    }
+
+   // logger.info(selectedIndex)
+    return(selectedIndex)
+
+  }
+
 /* predict */
 
 predict(variablebindings, minFx, maxFx, maxDecrease, maxIncrease){
