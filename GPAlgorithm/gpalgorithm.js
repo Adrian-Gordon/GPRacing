@@ -4,7 +4,7 @@ const logger = require('../logger/logger')(module)
 
 const nconf = require('../config/conf.js').nconf
 
-
+/*
 
 nconf.defaults({
   minDepth: 2,
@@ -57,18 +57,22 @@ nconf.defaults({
   },
   "constantsSet":[]
 
-})
+})*/
 
-let constants = new Array(nconf.get('constants').nconstants)
-for (let i=0; i< constants.length; i++){
-    constants[i] = (Math.random()*(nconf.get('constants').max - nconf.get('constants').min) + nconf.get('constants').min).toFixed(4)
-}
-   
-nconf.set('constantsSet',constants)
+
 
 
 const GPnode = require('../GPNode/GPnode.js').GPnode
 
+const generateConstants = (nconstants) => {
+  let constants = new Array(nconstants)
+  for (let i=0; i< constants.length; i++){
+    constants[i] = (Math.random()*(nconf.get('constants').max - nconf.get('constants').min) + nconf.get('constants').min).toFixed(4)
+  }
+   
+  
+  return(constants)
+}
 
 
 
@@ -170,7 +174,7 @@ const evaluatePopulationMember = (populationMember, observations) => {
     }
 
   }
-//  logger.info('rule min: ' + min)
+ // logger.info('rule min: ' + min)
  //logger.info('rule max: ' + max)
 
   rule.minfofx=min
@@ -230,10 +234,31 @@ const sortPopulation = (population) => {
   }))
 }
 
+const getTournamentWinner = (tournament) => {
+
+    tournament.sort(((a,b) => {
+      if(a.stats.fitness < b.stats.fitness)return(-1)
+      else if(a.stats.fitness > b.stats.fitness)return(1)
+      else return(0)
+    }))
+    return(tournament[0])
+}
+
+const getTournament = (population, tournamentSize) => {
+  let tournament = new Array(tournamentSize)
+  for(let i = 0; i< tournamentSize; i++){
+    let index = Math.floor(Math.random() *population.length)
+    tournament[i] = population[index]
+  }
+
+  return(tournament)
+}
+
+
 
 
 
 //generatePopulation(10)
 
-module.exports = Object.assign({}, {evaluatePopulation, evaluatePopulationMember, generatePopulation, sortPopulation})
+module.exports = Object.assign({}, {evaluatePopulation, evaluatePopulationMember, generateConstants, generatePopulation, sortPopulation, getTournament,getTournamentWinner})
 

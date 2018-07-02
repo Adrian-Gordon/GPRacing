@@ -9,10 +9,77 @@ const expect = chai.expect
 const GPnode = require('../GPNode/GPnode.js').GPnode
 const gpalgorithm = require('./gpalgorithm')
 
+const nconf = require('../config/conf.js').nconf
+
+
+
+nconf.defaults({
+  minDepth: 2,
+  maxDepth: 6,
+"functionSet":{
+    "+":{
+      "arity":2
+    },
+    "-":{
+      "arity":2
+    },
+    "*":{
+      "arity":2
+    },
+    "/":{
+      "arity":2
+    },
+    "^":{
+      "arity":2
+    },
+    "if<=":{
+      "arity":4
+    },
+    "cos":{
+      "arity":1
+    },
+    "sin":{
+      "arity":1
+    },
+    "log":{
+      "arity":1
+    },
+    "exp":{
+      "arity":1
+    },
+    "sqrt":{
+      "arity":1
+    }
+  },
+  "variables":["x","y","z"],
+  "proportions":{
+    "functions": 0.5,
+    "constants": 0.25,
+    "variables": 0.25
+  },
+  "constants": {
+    "nconstants" : 10,
+    "min": -10.0,
+    "max": 10.0
+  },
+  "constantsSet":[]
+
+})
+
 
 describe('gpalgorithm', () => {
 
+  if('returns a set of constants', (done) => {
+
+    let constants = gpalgorithm.generateConstants(10)
+    constants.length.should.eql(10)
+    done()
+
+  })
+
   it('returns a population', (done) => {
+    let constants = gpalgorithm.generateConstants(10)
+    nconf.set('constantsSet',constants)
     let population = gpalgorithm.generatePopulation(10)
 
     population.length.should.eql(10)
@@ -161,7 +228,7 @@ describe('gpalgorithm', () => {
     done()
   })
 
-   it('sorts a poulation', (done) => {
+   it('sorts a population', (done) => {
     let node1 = GPnode.parseNode(["*", "speed1", "*","x",2.0])
 
     let populationMember1 = {
@@ -212,5 +279,49 @@ describe('gpalgorithm', () => {
      
     
     done()
+  })
+
+   it("returns a tournament", (done) => {
+     let population = new Array(10)
+
+     for(let i=0; i< population.length; i++){
+      population[i] = {
+        stats:{
+        cumulativeError:0.0,
+        nobservations: 0
+      }
+      }
+    }
+
+    let tournament = gpalgorithm.getTournament(population, 5)
+    tournament.length.should.eql(5)
+    done()
+   })
+
+  it("returns a tournament result", (done) => {
+    let tournament = new Array(5)
+
+    for(let i=0; i< tournament.length; i++){
+      tournament[i] = {
+        stats:{
+        cumulativeError:0.0,
+        nobservations: 0
+      }
+      }
+    }
+
+    tournament[0].stats.fitness = 0.11
+    tournament[1].stats.fitness = 0.12
+    tournament[2].stats.fitness = 0.05
+    tournament[3].stats.fitness = 0.13
+    tournament[4].stats.fitness = 0.14
+
+
+    let tournamentWinner = gpalgorithm.getTournamentWinner(tournament)
+
+    tournamentWinner.stats.fitness.should.eql(0.05)
+
+    done()
+
   })
 })
