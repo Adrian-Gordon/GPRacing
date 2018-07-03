@@ -58,11 +58,11 @@ nconf.defaults({
     "max": 10.0
   },
   "constantsSet":[],
-  "populationsize": 20,
+  "populationsize": 100,
   "datafileurl":"../data/test-100.json",
   "maxSpeedIncrease":0.40340390203403914,
   "maxSpeedDecrease":-0.2880974917179366,
-  "ngenerations": 10,
+  "ngenerations": 100,
   'nelite': 5,
   "crossoverrate":0.9,
   "tournamentsize": 5,
@@ -169,14 +169,14 @@ for(let generation=0; generation< nconf.get('ngenerations');generation++){
     }
 
   }
-  logger.info(JSON.stringify(newPopulation))
+  //logger.info(JSON.stringify(newPopulation))
 
   population = newPopulation
   population = gpa.evaluatePopulation(population, observations, true)
 
   population = gpa.sortPopulation(population)
-  logger.info(JSON.stringify(population[0]))
+  logger.info(JSON.stringify(population[0].stats.fitness))
 
-  logger.info(JSON.stringify(population[19]))
+  //logger.info(JSON.stringify(population[19]))
 
 }
