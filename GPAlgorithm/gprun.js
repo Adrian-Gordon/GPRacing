@@ -66,8 +66,7 @@ nconf.defaults({
   'nelite': 5,
   "crossoverrate":0.9,
   "tournamentsize": 5,
-  "pointmutationrate":0.05,
-  "pointmutationratefunctions":0.9,
+  "pointmutationrate":0.05
 
 })
 
