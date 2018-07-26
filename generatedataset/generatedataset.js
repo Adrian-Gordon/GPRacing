@@ -7,6 +7,8 @@ const moment = require('moment')
 
 const absoluteMinimumSpeed = nconf.get('absoluteMinimumSpeed')
 const absoluteMaximumSpeed = nconf.get('absoluteMaximumSpeed')
+const absoluteMinimumWeight = nconf.get('absoluteMinimumWeight')
+const absoluteMaximumWeight = nconf.get('absoluteMaximumWeight')
 const minPercentOfWinningTime = nconf.get('minpercentofwinningtime')
 const minDistance = nconf.get("mindistance")
 const maxDistance = nconf.get("maxdistance")
@@ -45,33 +47,38 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
 
 
               if(racetypes.find((str) => str === performance.racetype) && surfaces.find((str) => str === performance.surface)) {
-                if((performance.speed >= absoluteMinimumSpeed)&&(performance.speed <= absoluteMaximumSpeed)){
-                  if(goings.find((str) => str === performance.going)){
-                    if(performance.percentofwinningtime >= minPercentOfWinningTime){
-                      //logger.info("GOOD")
-                      if(performance.distance >= minDistance && performance.distance < maxDistance){
-                        if((generateset == 'generate') && moment(performance.date).isBefore(datelimit)){
-                          performanceArray.push(performance)
+                  if((performance.weight >= absoluteMinimumWeight)&&(performance.weight <= absoluteMaximumWeight)){  
+                    if((performance.speed >= absoluteMinimumSpeed)&&(performance.speed <= absoluteMaximumSpeed)){
+                      if(goings.find((str) => str === performance.going)){
+                        if(performance.percentofwinningtime >= minPercentOfWinningTime){
+                          //logger.info("GOOD")
+                          if(performance.distance >= minDistance && performance.distance < maxDistance){
+                            if((generateset == 'generate') && moment(performance.date).isBefore(datelimit)){
+                              performanceArray.push(performance)
+                            }
+                            else if((generateset =='test') && moment(performance.date).isSameOrAfter(datelimit)) {
+                              performanceArray.push(performance)
+                            }
+                          }
+                            
                         }
-                        else if((generateset =='test') && moment(performance.date).isSameOrAfter(datelimit)) {
-                          performanceArray.push(performance)
+                        else{
+                         // logger.info("Wrong percent: " + performance.percentofwinningtime)
                         }
+
                       }
-                        
+                      else{
+                        //logger.info("Wrong going: " + performance.going)
+                      }
+
                     }
                     else{
-                     // logger.info("Wrong percent: " + performance.percentofwinningtime)
+                      //logger.info("Wrong absolute speed")
                     }
-
                   }
                   else{
-                    //logger.info("Wrong going: " + performance.going)
+                    //logger.info("Wrong absolute weight")
                   }
-
-                }
-                else{
-                  //logger.info("Wrong absolute speed")
-                }
               }
               else{
                 //logger.info("Wrong type or surface: " + performance.racetype + " " + performance.surface)
