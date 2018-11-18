@@ -1,22 +1,21 @@
 {
-  "name": "gpalgorithm",
+  "name": "gppredict",
   "version": "1.0.0",
   "description": "",
-  "main": "gpalgorithm .js",
+  "main": "gppredict.js",
   "scripts": {
     "test": "mocha -R spec --reporter-options toConsole=true --conf=testconfig.json  *.spec.js"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "nconf": "^0.10.0",
-    "stream-to-string": "^1.1.0",
-    "winston": "^2.4.0"
-  },
   "devDependencies": {
     "mocha": "^5.2.0",
     "chai": "^4.1.2",
     "should": "^13.2.1",
     "mocha-junit-reporter": "^1.17.0"
+  },
+  "dependencies": {
+    "nconf": "^0.10.0",
+    "winston": "^3.1.0"
   }
 }

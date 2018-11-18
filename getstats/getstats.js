@@ -70,7 +70,7 @@ for(let i=0; i< 400;i++){
   weightsArray[i]=0
 }
 
-MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
+MongoClient.connect(nconf.get("databaseurl"),(err,database) => {
  //logger.info("connected");
     if(err) throw(err);
 

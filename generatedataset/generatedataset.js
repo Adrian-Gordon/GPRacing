@@ -27,11 +27,12 @@ const MongoClient=require('mongodb').MongoClient;
 
 let nRecords = 0
 
-MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
+MongoClient.connect(nconf.get("databaseurl"),{useNewUrlParser: true},(err,database) => {
  //logger.info("connected");
     if(err) throw(err);
 
     let cursor = database.db('rpdata').collection("horses").find()
+    //console.log("const dataset = [")
     cursor.forEach(horse => {
      // logger.info(horse._id)
         if(horse){
@@ -44,6 +45,7 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
               let performance = performances[key]
              // logger.info(JSON.stringify(performance))
               performance.raceid = key
+              performance.horseid = horse._id
 
 
               if(racetypes.find((str) => str === performance.racetype) && surfaces.find((str) => str === performance.surface)) {
@@ -106,6 +108,8 @@ MongoClient.connect("mongodb://" + nconf.get("databaseurl"),(err,database) => {
     error => {
       
       if(!output)console.log(nRecords)
+      //console.log(']')
+      //console.log("module.exports = {dataset}")
       process.exit()
     })
     
@@ -123,6 +127,7 @@ const generatePerformances = (parray) => {
         let moment2=moment(perf2.date);
         let diffDays = moment2.diff(moment1, 'days');
         let performanceRecord={
+          horseid: perf1.horseid,
           raceid1: perf1.raceid,
           racedate1: perf1.date,
           racedate2: perf2.date,
@@ -145,7 +150,7 @@ const generatePerformances = (parray) => {
         }
 
         // console.log(JSON.stringify(perf1))    
-        if(output)console.log(JSON.stringify(performanceRecord) + ",")
+        if(output)console.log(JSON.stringify(performanceRecord) )//+ ",")
         nRecords++
 
 

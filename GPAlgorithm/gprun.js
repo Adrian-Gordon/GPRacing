@@ -6,6 +6,10 @@ const nconf = require('../config/conf.js').nconf
 
 const fs = require('fs')
 
+const toString = require('stream-to-string')
+
+const readline = require('readline')
+
 
 
 nconf.defaults({
@@ -29,8 +33,8 @@ nconf.defaults({
     },
     "if<=":{
       "arity":4
-    },
-    "cos":{
+    }
+   /* "cos":{
       "arity":1
     },
     "sin":{
@@ -44,7 +48,7 @@ nconf.defaults({
     },
     "sqrt":{
       "arity":1
-    }
+    }*/
   },
   "variables":['speed1','distance1','distance2','distancediff','going1','going2','goingdiff','datediff','weight1','weight2','weightdiff'],
   "proportions":{
@@ -83,100 +87,133 @@ let population = gpa.generatePopulation(nconf.get('populationsize'))
 
 //logger.info(JSON.stringify(population))
 
-let observations = JSON.parse(fs.readFileSync(nconf.get('datafileurl'),'utf8'))
+//const rStream = fs.createReadStream(nconf.get('datafileurl'))
 
-//logger.info(JSON.stringify(observations))
+//toString(rStream,'utf-8').then(obs => {
+ // console.log(obs)
+//})
 
-population = gpa.evaluatePopulation(population, observations, true)
+//const observations = require(nconf.get('datafilename')).dataset
 
-population = gpa.sortPopulation(population)
+//let observations = JSON.parse(fs.readFileSync(nconf.get('datafileurl'),'utf8'))
+const observations = []
 
-logger.info(JSON.stringify(population[0]))
+const instream = fs.createReadStream(nconf.get('datafilepath'))
 
-logger.info(JSON.stringify(population[19]))
+const rl = readline.createInterface(instream)
 
-const crossoverRate = nconf.get('crossoverrate')
-const tournamentSize = nconf.get('tournamentsize')
+rl.on('line', line => {
+  //console.log(line)
+  const observation = JSON.parse(line)
+  observations.push(observation)
+})
 
-for(let generation=0; generation< nconf.get('ngenerations');generation++){
-  logger.info("GENERATION: " + generation)
-  const populationsize = nconf.get('populationsize')
-
-  let newPopulation = new Array(populationsize)
-
-  const nelite = nconf.get('nelite')
-  //copy elite members
-  for(let i=0; i<nelite; i++){
-    newPopulation[i]=population[i]
-  }
-
-
-  for(let i = nelite; i<populationsize; i++){
-    if(Math.random() < crossoverRate){ //crossover this member of the population
-        let parent1 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
-        let parent2 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
-
-        let index1 = parent1.rule.selectIndex()
-        let index2 = parent2.rule.selectIndex()
-
-        let offspring = GPnode.crossover(parent1.rule, parent2.rule, index1, index2)
-
-        let newPopulationMember = {
-          rule:offspring,
-          stats:{
-            cumulativeError:0,
-            nobservations:0,
-            fitness:Number.MAX_VALUE
-          }
-        }
-
-        newPopulation[i] = newPopulationMember
-    }
-    else{           //mutate
-      let tournamentWinner = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
-      let crossoverMutateIndex = tournamentWinner.rule.selectIndex()
-      let cmDepth = nconf.get('minDepth') +Math.floor(Math.random() * (nconf.get('maxDepth')-nconf.get('minDepth')))
-      let mutated = GPnode.subtreeMutate(tournamentWinner.rule, crossoverMutateIndex,cmDepth)
-
-      let mutatedArray = mutated.toArray()
-
-      for(let j=0;j<mutatedArray.length;j++){
-
-          let nodeToMutate=mutatedArray[j]
-          let rnd=Math.random()
-          //console.log("rnd: "+ rnd)
-          if(rnd > nconf.get('pointmutationrate')){
-            //logger.info(i + 'point mutate it');
-            GPnode.pointMutate(nodeToMutate) //mutates in situ
-          }
-          else{
-            //logger.info(i + 'do not point mutate it');
-          }
-      }
-      let newPopMember={
-          rule:mutated,
-          stats:{
-            cumulativeError:0,
-            nobservations:0,
-            fitness:Number.MAX_VALUE
-          }
-        }
-
-        newPopulation[i]=newPopMember;
+rl.on('close', line => {
+  //console.log('close:' + line)
+  //console.log(observations)
+  learn()
+})
 
 
+const learn = () => {
+  
 
-    }
+  //logger.info(JSON.stringify(observations))
 
-  }
-  //logger.info(JSON.stringify(newPopulation))
-
-  population = newPopulation
   population = gpa.evaluatePopulation(population, observations, true)
 
   population = gpa.sortPopulation(population)
-  logger.info(JSON.stringify(population[0].stats.fitness))
+
+  //logger.info(JSON.stringify(population[0]))
 
   //logger.info(JSON.stringify(population[19]))
 
+  const crossoverRate = nconf.get('crossoverrate')
+  const tournamentSize = nconf.get('tournamentsize')
+
+  for(let generation=0; generation< nconf.get('ngenerations');generation++){
+    console.log("#GENERATION: " + generation)
+    const populationsize = nconf.get('populationsize')
+
+    let newPopulation = new Array(populationsize)
+
+    const nelite = nconf.get('nelite')
+    //copy elite members
+    for(let i=0; i<nelite; i++){
+      newPopulation[i]=population[i]
+    }
+
+
+    for(let i = nelite; i<populationsize; i++){
+      if(Math.random() < crossoverRate){ //crossover this member of the population
+          let parent1 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
+          let parent2 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
+
+          let index1 = parent1.rule.selectIndex()
+          let index2 = parent2.rule.selectIndex()
+
+          let offspring = GPnode.crossover(parent1.rule, parent2.rule, index1, index2)
+
+          let newPopulationMember = {
+            rule:offspring,
+            stats:{
+              cumulativeError:0,
+              nobservations:0,
+              fitness:Number.MAX_VALUE
+            }
+          }
+
+          newPopulation[i] = newPopulationMember
+      }
+      else{           //mutate
+        let tournamentWinner = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
+        let crossoverMutateIndex = tournamentWinner.rule.selectIndex()
+        let cmDepth = nconf.get('minDepth') +Math.floor(Math.random() * (nconf.get('maxDepth')-nconf.get('minDepth')))
+        let mutated = GPnode.subtreeMutate(tournamentWinner.rule, crossoverMutateIndex,cmDepth)
+
+        let mutatedArray = mutated.toArray()
+
+        for(let j=0;j<mutatedArray.length;j++){
+
+            let nodeToMutate=mutatedArray[j]
+            let rnd=Math.random()
+            //console.log("rnd: "+ rnd)
+            if(rnd > nconf.get('pointmutationrate')){
+              //logger.info(i + 'point mutate it');
+              GPnode.pointMutate(nodeToMutate) //mutates in situ
+            }
+            else{
+              //logger.info(i + 'do not point mutate it');
+            }
+        }
+        let newPopMember={
+            rule:mutated,
+            stats:{
+              cumulativeError:0,
+              nobservations:0,
+              fitness:Number.MAX_VALUE
+            }
+          }
+
+          newPopulation[i]=newPopMember;
+
+
+
+      }
+
+    }
+    //logger.info(JSON.stringify(newPopulation))
+
+    population = newPopulation
+    population = gpa.evaluatePopulation(population, observations, true)
+
+    population = gpa.sortPopulation(population)
+    console.log(JSON.stringify(population[0].stats.fitness))
+    console.log("#" + population[0].rule.toStrArr())
+
+    //logger.info(JSON.stringify(population[19]))
+
+  }
 }
+
+

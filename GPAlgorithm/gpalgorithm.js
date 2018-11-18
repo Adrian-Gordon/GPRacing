@@ -4,60 +4,7 @@ const logger = require('../logger/logger')(module)
 
 const nconf = require('../config/conf.js').nconf
 
-/*
 
-nconf.defaults({
-  minDepth: 2,
-  maxDepth: 6,
-"functionSet":{
-    "+":{
-      "arity":2
-    },
-    "-":{
-      "arity":2
-    },
-    "*":{
-      "arity":2
-    },
-    "/":{
-      "arity":2
-    },
-    "^":{
-      "arity":2
-    },
-    "if<=":{
-      "arity":4
-    },
-    "cos":{
-      "arity":1
-    },
-    "sin":{
-      "arity":1
-    },
-    "log":{
-      "arity":1
-    },
-    "exp":{
-      "arity":1
-    },
-    "sqrt":{
-      "arity":1
-    }
-  },
-  "variables":["x","y","z"],
-  "proportions":{
-    "functions": 0.5,
-    "constants": 0.25,
-    "variables": 0.25
-  },
-  "constants": {
-    "nconstants" : 10,
-    "min": -10.0,
-    "max": 10.0
-  },
-  "constantsSet":[]
-
-})*/
 
 
 
@@ -190,11 +137,14 @@ const evaluatePopulationMember = (populationMember, observations) => {
     let obs=observations[i]
     if(obs.speed1!== null && obs.speed2 !== null){
      
-      
-      obs.predictedProportion=(obs.val - rule.minfofx)/(rule.maxfofx - rule.minfofx)
-      obs.predictedChange = maxDecrease + (obs.predictedProportion  *( maxIncrease - maxDecrease))
-      obs.actualChange=((obs.speed2 - obs.speed1)/obs.speed1)
-      obs.error = GPnode.squaredError(obs.predictedChange,obs.actualChange)
+      obs.val=rule.eval(obs)
+     
+     // obs.predictedProportion=(obs.val - rule.minfofx)/(rule.maxfofx - rule.minfofx)
+     // obs.predictedChange = maxDecrease + (obs.predictedProportion  *( maxIncrease - maxDecrease))
+    //  obs.actualChange=((obs.speed2 - obs.speed1)/obs.speed1)
+     // obs.error = GPnode.squaredError(obs.predictedChange,obs.actualChange)
+
+     obs.error = GPnode.squaredError(obs.val,obs.speed2)
 
       populationMember.stats.cumulativeError=populationMember.stats.cumulativeError + obs.error
       populationMember.stats.nobservations=populationMember.stats.nobservations+1;
