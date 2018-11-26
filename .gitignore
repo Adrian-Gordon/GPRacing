@@ -4,3 +4,4 @@ npm-debug.log
 data
 *.xml
 /data
+package-lock.json
