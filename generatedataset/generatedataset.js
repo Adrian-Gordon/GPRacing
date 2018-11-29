@@ -18,7 +18,7 @@ const goings = nconf.get('goings')
 const goingMappings = nconf.get('goingmappings')
 const generateset = nconf.get('generateset')
 const datelimit = nconf.get('datelimit')
-const output = nconf.get('output')
+const output = nconf.get('output') //will be null, "json" or "csv"
 
 const preprocesstype = nconf.get('preprocesstype') //will be null, 'standardise' or 'normalise'
 const stats = nconf.get('stats')
@@ -144,13 +144,20 @@ const generatePerformances = (parray) => {
           weight1:preprocess(preprocesstype,stats,'weight1',perf1.weight),
           weight2:preprocess(preprocesstype,stats,'weight2',perf2.weight),
           weightdiff:preprocess(preprocesstype,stats,'weightdiff',perf2.weight-perf1.weight),
+          weightxdistance1:preprocess(preprocesstype, stats,'weightxdistance1',perf1.weight * perf1.distance),
+          weightxdistance2:preprocess(preprocesstype, stats,'weightxdistance1',perf2.weight * perf2.distance),
+          weightxdistancediff:preprocess(preprocesstype, stats,'weightxdistancediff',(perf2.weight * perf2.distance)-(perf1.weight * perf1.distance)),
           type1:perf1RaceType,
           type2:perf2RaceType,
           typediff:perf2RaceType-perf1RaceType
         }
 
         // console.log(JSON.stringify(perf1))    
-        if(output)console.log(JSON.stringify(performanceRecord) )//+ ",")
+        if(output=="json")console.log(JSON.stringify(performanceRecord) )//+ ",")
+        else if(output=="csv"){
+          //console.log(JSON.stringify(performanceRecord) )
+          console.log(performanceRecord.horseid + "," + performanceRecord.raceid1 + "," + performanceRecord.speed1 + "," + performanceRecord.speed2 + "," + performanceRecord.datediff +"," +performanceRecord.goingdiff + "," + performanceRecord.distancediff + "," + performanceRecord.weight1 + "," + performanceRecord.weight2 + "," + performanceRecord.weightdiff +"," + performanceRecord.weightxdistancediff)
+        }
         nRecords++
 
 
