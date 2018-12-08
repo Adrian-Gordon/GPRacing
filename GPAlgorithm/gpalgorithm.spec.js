@@ -109,7 +109,7 @@ describe('gpalgorithm', () => {
       {"speed1":15.3,"speed2":15.3,"x":3}
     ]
 
-    let result = gpalgorithm.evaluatePopulationMember(populationMember, observations)
+    let result = gpalgorithm.evaluatePopulationMember(populationMember, observations,"speed2")
 
     result.stats.fitness.should.be.above(0.29)
 
@@ -158,7 +158,7 @@ describe('gpalgorithm', () => {
       {"speed1":15.3,"speed2":15.3,"x":3}
     ]
 
-    let result = gpalgorithm.evaluatePopulation(population, observations, true)
+    let result = gpalgorithm.evaluatePopulation(population, observations, true, "speed2")
 
      result.should.be.instanceOf(Array)
      result[0].stats.nobservations.should.eql(3)
@@ -213,7 +213,7 @@ describe('gpalgorithm', () => {
       {"speed1":15.3,"speed2":15.3,"x":3}
     ]
 
-    let result = gpalgorithm.evaluatePopulation(population, observations, false)
+    let result = gpalgorithm.evaluatePopulation(population, observations, false, "speed2")
 
      result.should.be.instanceOf(Array)
      result[0].stats.nobservations.should.eql(0)
@@ -268,7 +268,7 @@ describe('gpalgorithm', () => {
       {"speed1":15.3,"speed2":15.3,"x":3}
     ]
 
-    let evaluatedPopulation = gpalgorithm.evaluatePopulation(population, observations, true)
+    let evaluatedPopulation = gpalgorithm.evaluatePopulation(population, observations, true, "speed2")
 
     let sortedPopulation = gpalgorithm.sortPopulation(evaluatedPopulation)
 

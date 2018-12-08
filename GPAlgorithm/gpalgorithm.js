@@ -81,7 +81,9 @@ const generatePopulation = (populationSize) => {
 
 }
 
-const evaluatePopulation = (population, observations, all) => {
+
+
+const evaluatePopulation = (population, observations, all, attributeName) => {
   let start = 0
   if(!all){
     start = nconf.get("nelite")
@@ -89,14 +91,58 @@ const evaluatePopulation = (population, observations, all) => {
 
   for(let i=start; i< population.length; i++){
     let populationMember = population[i]
-    evaluatePopulationMember(populationMember, observations)
+    evaluatePopulationMember(populationMember, observations, attributeName)
   }
 
   //logger.info(JSON.stringify(population))
   return population
 }
 
-const evaluatePopulationMember = (populationMember, observations) => {
+const evaluatePopulationMember = (populationMember, observations, attributeName) => {
+  let rule = populationMember.rule
+
+  for(let i=0;i<observations.length;i++){
+  //  for(var i=0;i<10;i++){
+    let obs=observations[i]
+    
+      obs.val=rule.eval(obs)
+     
+
+     obs.error = GPnode.squaredError(obs[attributeName],obs.val)
+     
+
+      populationMember.stats.cumulativeError=populationMember.stats.cumulativeError + obs.error
+      populationMember.stats.nobservations=populationMember.stats.nobservations+1;
+
+
+      //logger.info(JSON.stringify(obs))
+     
+  
+  }
+
+  populationMember.stats.fitness=Math.sqrt(populationMember.stats.cumulativeError / populationMember.stats.nobservations)
+  //logger.info("Fitness: " + pm.stats.fitness);
+  if(populationMember.stats.fitness==Infinity){
+    //logger.info("FITNESS INFINITY");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+  if(populationMember.stats.fitness==null){
+    //logger.info("FITNESS NULL");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+  if( isNaN(populationMember.stats.fitness)){
+    //logger.info("FITNESS NAN");
+    populationMember.stats.fitness=Number.MAX_VALUE;
+  }
+
+  //logger.info(JSON.stringify(populationMember))
+
+
+  return populationMember
+
+}
+
+/*const evaluatePopulationMemberOld = (populationMember, observations) => {
 
  let rule=populationMember.rule
  
@@ -174,7 +220,7 @@ const evaluatePopulationMember = (populationMember, observations) => {
 
 
   return populationMember
-}
+}*/
 
 const sortPopulation = (population) => {
   return(population.sort((a,b) => {
