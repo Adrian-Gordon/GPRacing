@@ -1,76 +1,24 @@
 {
-  "preprocesstype":"standardise",
-"stats":{
-  "speed1":{"min":13.090676762896354,"max":18.40512351326624,"mean":16.522818867542163,"stdev":0.5052146650371538},
-  "speed2":{"min":13.090676762896354,"max":18.40512351326624,"mean":16.572250856306457,"stdev":0.4957370733505958},
-  "datediff":{"min":-1456,"max":3946,"mean":579.7659481505656,"stdev":536.1111341711259},
-  "going1":{"min":-1,"max":0,"mean":-0.8463812932576475,"stdev":0.3605828610489614},
-  "going2":{"min":-1,"max":0,"mean":-0.8537626239658737,"stdev":0.3533440333228313},
-  "goingdiff":{"min":-1,"max":1,"mean":-0.007381330708226109,"stdev":0.482826816981926},
-  "distance1":{"min":804.672,"max":1308.5064,"mean":1120.2731112045112,"stdev":98.66432486781547},
-  "distance2":{"min":804.672,"max":1308.5064,"mean":1120.1884482525365,"stdev":99.29970475043899},
-  "distancediff":{"min":-502.9200000000001,"max":502.9200000000001,"mean":-0.08466295228257749,"stdev":114.5774388762322},
-  "weight1":{"min":103,"max":150,"mean":127.00750616597027,"stdev":5.468515380675092},
-  "weight2":{"min":103,"max":150,"mean":127.3788785870075,"stdev":5.786056193655611},
-  "weightdiff":{"min":-43,"max":40,"mean":0.37137242103723833,"stdev":7.483646888326457}
-},
-"maxSpeedIncrease":0.40340390203403914,
-"maxSpeedDecrease":-0.2880974917179366,
-"functionSet":{
-    "+":{
-      "arity":2
-    },
-    "-":{
-      "arity":2
-    },
-    "*":{
-      "arity":2
-    },
-    "/":{
-      "arity":2
-    },
-    "^":{
-      "arity":2
-    },
-    "if<=":{
-      "arity":4
-    },
-    "cos":{
-      "arity":1
-    },
-    "sin":{
-      "arity":1
-    },
-    "log":{
-      "arity":1
-    },
-    "exp":{
-      "arity":1
-    },
-    "sqrt":{
-      "arity":1
-    }
-},
-"variables":["speed1","distance1","distance2","distancediff","going1","going2","goingdiff","datediff","weight1","weight2","weightdiff"],
 "rule":[
-"-","^","^","*","speed1",3.5129,"+","/","/",9.0331,-4.5116,"-",3.5515,3.5129,"speed1","if<=","+","weight1","goingdiff","if<=","+","weight1","if<=","+","weight1","weight1","weight1","+","weight1","if<=","+","weight1",3.5129,"weight1","/",9.0331,-4.5116,"-","^",3.5129,"if<=","+","weight1","^","^","*","speed1",3.5129,"+","/","/",9.0331,-4.5116,"-",3.5515,"+","weight1","goingdiff","speed1","if<=","+","weight1","/",9.0331,-4.5116,"goingdiff",3.5129,"goingdiff",3.5515,3.5129,"goingdiff","^",3.5129,"weight1","-","^",3.5129,"if<=","+","weight1","^","^","*","speed1","if<=","+","weight1","/",9.0331,-4.5116,"goingdiff",3.5129,"goingdiff","+","/","/",9.0331,-4.5116,"-",3.5515,"+","weight1","speed1","speed1","if<=","+","weight1","/",9.0331,-4.5116,"goingdiff",3.5129,"goingdiff","goingdiff","weight1","goingdiff","^",3.5129,"weight1","goingdiff",3.5129,"goingdiff",3.5129,"goingdiff","^",3.5129,"weight1"],
-"observation":{ 
-  "speed1": 16.522662042846388,
-  "speed2": 16.584336356141797,
-  "datediff": 196,
-  "going1": -1,
-  "going2": -1,
-  "goingdiff": 0,
-  "distance1": 1207.008,
-  "distance2": 1005.84,
-  "distancediff": -201.168,
-  "weight1": 127,
-  "weight2": 129,
-  "weightdiff": 2 
-  },
-"datafilepath":"../data/0-1310-g-gs-st.js",
-"minFx":-1.1911924929478557e+238,
-"maxFx":1.7976931348623157e+308
-
+"if<=","if<=",-6.6491,"if<=","distancediff",5.9798,"distancediff","if<=","distancediff","goingdiff","-",-6.6491,"distancediff","-","-",-6.6491,"goingdiff","if<=",-6.6491,"if<=","-","-",-6.6491,"goingdiff","if<=",-6.6491,"if<=","distancediff",5.9798,"distancediff","if<=","distancediff",-6.6491,-6.6491,"goingdiff","/","distancediff","-","-","distancediff","goingdiff","distancediff","-","-","distancediff","goingdiff","distancediff","goingdiff","-","-","distancediff","goingdiff","distancediff","if<=","distancediff","distancediff","-",-6.6491,"goingdiff","goingdiff","/","distancediff","-","-","distancediff","goingdiff","distancediff","distancediff","/",-6.6491,"-","-","distancediff","goingdiff","if<=","distancediff","-","-","distancediff","goingdiff","if<=",-6.6491,5.9798,"distancediff","goingdiff","distancediff","goingdiff","goingdiff",5.9798,"/","goingdiff","-","-","-",-6.6491,"goingdiff","if<=",-6.6491,"if<=","-","-",-6.6491,"goingdiff","if<=",-6.6491,"if<=","distancediff",5.9798,"distancediff","if<=","distancediff",-6.6491,-6.6491,"goingdiff","/","distancediff","-","-","distancediff","goingdiff","distancediff","-","-","distancediff","goingdiff","distancediff","goingdiff","-","-","distancediff","goingdiff","distancediff","if<=","distancediff","distancediff","-",-6.6491,"goingdiff","goingdiff","/","distancediff","-","-","distancediff","goingdiff","distancediff","/","distancediff","-","goingdiff","distancediff","if<=","goingdiff","if<=","distancediff",5.9798,"-","distancediff","goingdiff","if<=","distancediff",-6.6491,"distancediff","goingdiff","if<=",-6.6491,"if<=","distancediff",5.9798,"if<=","distancediff","distancediff","-",-6.6491,"goingdiff","goingdiff","if<=","distancediff","distancediff","distancediff","goingdiff","/","distancediff","-","-","distancediff","goingdiff","if<=","distancediff","distancediff","distancediff","if<=","distancediff","distancediff","-",-6.6491,-6.6491,"goingdiff","/","distancediff","-",-6.6491,"distancediff","/","distancediff","-","-","-","goingdiff","goingdiff","/","distancediff","-","-","distancediff","goingdiff","distancediff","distancediff","goingdiff"
+],
+"observation":[
+    {
+        "datediff": 90.0,
+        "dgdiff": 0,
+        "distancediff": 0,
+        "gd": 0.8533229445,
+        "goingdiff": 0,
+        "horseid": 753087,
+        "raceid": 652897,
+        "speed1": 16.3737587498,
+        "speed2": 16.1688948426,
+        "speeddiff": -0.2048639072,
+        "weight1": 131.0,
+        "weight2": 139,
+        "weightdiff": 8
+    }
+],
+"datasourceurl":"http://localhost:8080"
 }
 

@@ -27,10 +27,13 @@ const MongoClient=require('mongodb').MongoClient;
 
 let nRecords = 0
 
+//console.log(nconf.get("databaseurl"))
 MongoClient.connect(nconf.get("databaseurl"),{useNewUrlParser: true},(err,database) => {
  //logger.info("connected");
     if(err) throw(err);
 
+    if(output=="csv")
+      console.log("horseid,raceid1,raceid2,speed1,datediff,distance1,distance2,going1,going2,weight1,weight2,speed2")
     let cursor = database.db('rpdata').collection("horses").find()
     //console.log("const dataset = [")
     cursor.forEach(horse => {
@@ -70,7 +73,7 @@ MongoClient.connect(nconf.get("databaseurl"),{useNewUrlParser: true},(err,databa
 
                       }
                       else{
-                        //logger.info("Wrong going: " + performance.going)
+                       // logger.info("Wrong going: " + performance.going)
                       }
 
                     }
@@ -144,9 +147,9 @@ const generatePerformances = (parray) => {
           weight1:preprocess(preprocesstype,stats,'weight1',perf1.weight),
           weight2:preprocess(preprocesstype,stats,'weight2',perf2.weight),
           weightdiff:preprocess(preprocesstype,stats,'weightdiff',perf2.weight-perf1.weight),
-          weightxdistance1:preprocess(preprocesstype, stats,'weightxdistance1',perf1.weight * perf1.distance),
-          weightxdistance2:preprocess(preprocesstype, stats,'weightxdistance1',perf2.weight * perf2.distance),
-          weightxdistancediff:preprocess(preprocesstype, stats,'weightxdistancediff',(perf2.weight * perf2.distance)-(perf1.weight * perf1.distance)),
+         // weightxdistance1:preprocess(preprocesstype, stats,'weightxdistance1',perf1.weight * perf1.distance),
+         // weightxdistance2:preprocess(preprocesstype, stats,'weightxdistance1',perf2.weight * perf2.distance),
+         // weightxdistancediff:preprocess(preprocesstype, stats,'weightxdistancediff',(perf2.weight * perf2.distance)-(perf1.weight * perf1.distance)),
           type1:perf1RaceType,
           type2:perf2RaceType,
           typediff:perf2RaceType-perf1RaceType
@@ -156,7 +159,7 @@ const generatePerformances = (parray) => {
         if(output=="json")console.log(JSON.stringify(performanceRecord) )//+ ",")
         else if(output=="csv"){
           //console.log(JSON.stringify(performanceRecord) )
-          console.log(performanceRecord.horseid + "," + performanceRecord.raceid1 + "," + performanceRecord.speed1 + "," + performanceRecord.speed2 + "," + performanceRecord.datediff +"," +performanceRecord.goingdiff + "," + performanceRecord.distancediff + "," + performanceRecord.weight1 + "," + performanceRecord.weight2 + "," + performanceRecord.weightdiff +"," + performanceRecord.weightxdistancediff)
+          console.log(performanceRecord.horseid + "," + performanceRecord.raceid1 + "," + performanceRecord.raceid2 + "," + performanceRecord.speed1 + "," + performanceRecord.datediff +"," +performanceRecord.distance1 + "," + performanceRecord.distance2 + "," + performanceRecord.going1 + "," + performanceRecord.going2 + "," + performanceRecord.weight1 +"," + performanceRecord.weight2 + "," + performanceRecord.speed2)
         }
         nRecords++
 

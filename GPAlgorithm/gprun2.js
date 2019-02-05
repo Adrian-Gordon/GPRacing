@@ -31,29 +31,13 @@ nconf.defaults({
     "/":{
       "arity":2
     },
-    "^":{
-      "arity":2
-    },
     "if<=":{
       "arity":4
     }
-   /* "cos":{
-      "arity":1
-    },
-    "sin":{
-      "arity":1
-    },
-    "log":{
-      "arity":1
-    },
-    "exp":{
-      "arity":1
-    },
-    "sqrt":{
-      "arity":1
-    }*/
+   
   },
-  "variables":['speed1','distance1','distance2','distancediff','going1','going2','goingdiff','datediff','weight1','weight2','weightdiff'],
+  "variables":["distancediff","weightdiff","goingdiff"],
+  "dependantvariable":"speeddiff",
   "proportions":{
     "functions": 0.5,
     "constants": 0.25,
@@ -69,12 +53,11 @@ nconf.defaults({
   "datafileurl":"../data/test-100.json",
   "maxSpeedIncrease":0.40340390203403914,
   "maxSpeedDecrease":-0.2880974917179366,
-  "ngenerations": 100,
+  "epochs": 100,
   'nelite': 5,
   "crossoverrate":0.9,
   "tournamentsize": 5,
   "pointmutationrate":0.05,
-  "batchsize": 10
 
 })
 
@@ -82,73 +65,59 @@ const GPnode = require('../GPNode/GPnode.js').GPnode
 
 const gpa = require('./gpalgorithm')
 
+const batchsize = nconf.get("batchsize")
+
+const dependantvariable = nconf.get("dependantvariable")
+
+const epochs = nconf.get("epochs")
+
+const populationsize = nconf.get('populationsize')
+
+const nelite = nconf.get('nelite')
+
+const crossoverRate = nconf.get('crossoverrate')
+
+const tournamentSize = nconf.get('tournamentsize')
+
 nconf.set('constantsSet',gpa.generateConstants(nconf.get('constants').nconstants))
 
 
-//logger.info(JSON.stringify(nconf.get('constantsSet')))
 
-let population = gpa.generatePopulation(nconf.get('populationsize'))
-
-//logger.info(JSON.stringify(population))
-
-//const rStream = fs.createReadStream(nconf.get('datafileurl'))
-
-//toString(rStream,'utf-8').then(obs => {
- // console.log(obs)
-//})
-
-//const observations = require(nconf.get('datafilename')).dataset
-
-//let observations = JSON.parse(fs.readFileSync(nconf.get('datafileurl'),'utf8'))
-
-
-/*const instream = fs.createReadStream(nconf.get('datafilepath'))
-
-const rl = readline.createInterface(instream)
-
-rl.on('line', line => {
-  //console.log(line)
-  const observation = JSON.parse(line)
-  observations.push(observation)
-})
-
-rl.on('close', line => {
-  //console.log('close:' + line)
-  //console.log(observations)
-  learn()
-})*/
+const getDataBatch = async(batchSize) => {
+  let url = nconf.get("datasourceurl")+"/data"
+  if (typeof batchSize != 'undefined'){
+    url = nconf.get("datasourceurl")+"/data?n=" + batchSize
+  }
+  const promise = new Promise((resolve,reject) => {
+    request(url)
+      .then(data => {
+        //console.log("obs: " + JSON.stringify(data))
+        resolve(data)
+      })
+  })
+  //const data = await getBatch(batchSize)
+  let data = await promise
+ // console.log(data)
+  return JSON.parse(data)
 
 
-const learn = () => {
-  
+}
 
-  //logger.info(JSON.stringify(observations))
+const learnStep = (epoch) => {
+  console.log("#Epoch: " + epoch)
+  console.log(JSON.stringify(population[0].stats.fitness))
+  console.log("#" + population[0].rule.toStrArr())
 
-  population = gpa.evaluatePopulation(population, observations, true)
+  //prepare the population for the next generation
+  let newPopulation = new Array(populationsize)
 
-  population = gpa.sortPopulation(population)
+  //copy elite members
+  for(let i=0; i<nelite; i++){
+    newPopulation[i]=population[i]
+  }
 
-  //logger.info(JSON.stringify(population[0]))
-
-  //logger.info(JSON.stringify(population[19]))
-
-  const crossoverRate = nconf.get('crossoverrate')
-  const tournamentSize = nconf.get('tournamentsize')
-
-  for(let generation=0; generation< nconf.get('ngenerations');generation++){
-    console.log("#GENERATION: " + generation)
-    const populationsize = nconf.get('populationsize')
-
-    let newPopulation = new Array(populationsize)
-
-    const nelite = nconf.get('nelite')
-    //copy elite members
-    for(let i=0; i<nelite; i++){
-      newPopulation[i]=population[i]
-    }
-
-
-    for(let i = nelite; i<populationsize; i++){
+  //replace poulation members
+  for(let i = nelite; i<populationsize; i++){
       if(Math.random() < crossoverRate){ //crossover this member of the population
           let parent1 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
           let parent2 = gpa.getTournamentWinner(gpa.getTournament(population,tournamentSize))
@@ -206,40 +175,45 @@ const learn = () => {
       }
 
     }
-    //logger.info(JSON.stringify(newPopulation))
 
     population = newPopulation
-    population = gpa.evaluatePopulation(population, observations, true)
 
-    population = gpa.sortPopulation(population)
-    console.log(JSON.stringify(population[0].stats.fitness))
-    console.log("#" + population[0].rule.toStrArr())
+    getDataBatch(batchsize)
+    .then(databatch => {
+      population = gpa.evaluatePopulation(population, databatch, true, dependantvariable)
 
-    //logger.info(JSON.stringify(population[19]))
-
-  }
+      population = gpa.sortPopulation(population)
+      if(epoch < epochs){
+        learnStep(epoch + 1)
+      }
+      else{ //print out final result
+        console.log("#Epoch: " + epoch)
+        console.log(JSON.stringify(population[0].stats.fitness))
+        console.log("#" + population[0].rule.toStrArr())
+      }
+    })
+    
 }
 
 
 
-const getDataBatch = async(batchSize) => {
-  const promise = new Promise((resolve,reject) => {
-    request(nconf.get("datasourceurl")+"/data?n="+ batchSize)
-      .then(data => {
-        //console.log("obs: " + JSON.stringify(data))
-        resolve(data)
-      })
-  })
-  //const data = await getBatch(batchSize)
-  let data = await promise
- // console.log(data)
-  return JSON.parse(data)
+let population = gpa.generatePopulation(nconf.get('populationsize'))
 
 
-}
+getDataBatch(batchsize)
+.then(databatch => {
+  population = gpa.evaluatePopulation(population, databatch, true, dependantvariable)
 
-let observations = getDataBatch(nconf.get('batchsize'))
+  population = gpa.sortPopulation(population)
 
-console.log(observations)
+  learnStep(0)
+
+})
+
+
+
+
+
+
 
 
